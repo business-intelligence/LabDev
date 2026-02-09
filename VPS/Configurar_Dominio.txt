@@ -74,5 +74,3 @@ Agora, abra o seu navegador e acesse: https://seu-dominio.com
 [!NOTE] Por que isso resolve o erro 1008? Agora o navegador verá o cadeado verde (HTTPS). Isso ativa o "Secure Context", permitindo que o OpenClaw use os WebSockets e as APIs necessárias para conversar com a IA sem interrupções.
 
 O certificado foi gerado com sucesso ou o Certbot deu algum erro de "Challenge failed"? (Isso costuma acontecer se o DNS ainda não propagou).
-
-Testando aqui...
