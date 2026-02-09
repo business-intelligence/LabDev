@@ -1,0 +1,76 @@
+1. Apontamento de DNS (Painel Hostinger)
+Antes de mexer no terminal, seu domínio precisa "saber" onde sua VPS está.
+
+Acesse o hPanel da Hostinger -> Domínios -> DNS/Nameservers.
+
+Crie um Registro A:
+
+Nome (Host): @ (para o domínio principal) ou ia (para um subdomínio como ia.seu-site.com).
+
+Aponta para (IP): O endereço IP público da sua VPS.
+
+TTL: Pode deixar o padrão.
+
+2. Instalação do Nginx e Certbot
+Agora, no terminal da sua VPS, instale o servidor que servirá de "escudo" (Proxy) e o gerador de certificados SSL.
+
+Bash
+sudo apt update
+sudo apt install nginx certbot python3-certbot-nginx -y
+3. Configuração do Nginx para o OpenClaw
+Vamos criar um arquivo de configuração que recebe as chamadas do seu domínio e as envia para o Docker (porta 3000).
+
+Crie o arquivo de configuração:
+
+Bash
+sudo nano /etc/nginx/sites-available/openclaw
+Cole o conteúdo abaixo (substitua seu-dominio.com pelo seu domínio real):
+
+Nginx
+server {
+    listen 80;
+    server_name seu-dominio.com; # <--- COLOQUE SEU DOMÍNIO AQUI
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+Ative a configuração e reinicie o Nginx:
+
+Bash
+sudo ln -s /etc/nginx/sites-available/openclaw /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+4. Gerando o Certificado SSL (HTTPS Grátis)
+Agora vamos transformar o seu acesso em seguro com o Let's Encrypt.
+
+Bash
+sudo certbot --nginx -d seu-dominio.com
+O Certbot vai pedir seu e-mail e perguntar se você aceita os termos.
+
+Ao final, ele perguntará se você quer redirecionar todo o tráfego para HTTPS. Escolha "2" (Redirect).
+
+5. Liberando as portas no Firewall
+Para o HTTPS funcionar, as portas 80 (HTTP) e 443 (HTTPS) precisam estar abertas.
+
+No Ubuntu:
+
+Bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw reload
+No Painel da Hostinger: Vá em VPS -> Gerenciar -> Firewall. Certifique-se de que as portas 80 e 443 estão na lista de permitidas.
+
+6. Teste Final
+Agora, abra o seu navegador e acesse: https://seu-dominio.com
+
+[!NOTE] Por que isso resolve o erro 1008? Agora o navegador verá o cadeado verde (HTTPS). Isso ativa o "Secure Context", permitindo que o OpenClaw use os WebSockets e as APIs necessárias para conversar com a IA sem interrupções.
+
+O certificado foi gerado com sucesso ou o Certbot deu algum erro de "Challenge failed"? (Isso costuma acontecer se o DNS ainda não propagou). 
