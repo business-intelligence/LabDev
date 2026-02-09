@@ -1,0 +1,22 @@
+Editar docker-compose.yml = user: "root"
+
+sudo git clone https://github.com/openclaw/openclaw.git && chmod -R 777 /home/ubuntu/git/openclaw && cd openclaw && ./docker-setup.sh
+
+
+Subir o container = docker compose up -d
+
+
+
+limpar cache = docker-compose exec openclaw-openclaw-gateway-1 node dist/index.js devices list
+
+
+Docker:
+Entrar terminal: docker exec -it openclaw-openclaw-gateway-1 /bin/sh
+
+Restart: docker-compose restart
+
+Atualizar Imagem e subir nova versão: docker compose pull / docker compose up -d
+
+Verificar consume Recursos: docker stats openclaw-openclaw-gateway-1
+
+Verificar logs em tempo real: docker logs -f openclaw-openclaw-gateway-1
